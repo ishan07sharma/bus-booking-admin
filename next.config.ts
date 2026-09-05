@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Keep firebase-admin (and jose/jwks-rsa) out of the Next bundler —
+  // otherwise Vercel hits ERR_REQUIRE_ESM on jose.
+  serverExternalPackages: [
+    "firebase-admin",
+    "@google-cloud/firestore",
+    "jose",
+    "jwks-rsa",
+  ],
   async headers() {
     return [
       {
