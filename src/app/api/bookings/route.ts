@@ -16,9 +16,9 @@ export function OPTIONS() {
 export async function POST(req: NextRequest) {
   try {
     const user = await requireUser(req);
-    if (user.role === "admin") {
-      return json({ error: "Admins cannot book seats" }, 403);
-    }
+    // if (user.role === "admin") {
+    //   return json({ error: "Admins cannot book seats" }, 403);
+    // }
 
     const body = await req.json();
     const tripId = body.tripId as string;

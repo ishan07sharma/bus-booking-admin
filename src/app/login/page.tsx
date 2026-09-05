@@ -2,11 +2,10 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/AuthProvider";
+import { authErrorMessage, useAuth } from "@/components/AuthProvider";
 
 export default function LoginPage() {
-  const { user, loading, isAdmin, signInEmail, signInGoogle, requireAdminSession, logout } =
-    useAuth();
+  const { user, loading, isAdmin, signInEmail, signInGoogle, logout } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,27 +13,21 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || busy) return;
     if (user && isAdmin === true) router.replace("/dashboard");
-    if (user && isAdmin === false) {
-      setError("Only admins can sign in to this dashboard");
-    }
-  }, [loading, user, isAdmin, router]);
-
-  async function afterSignIn() {
-    await requireAdminSession();
-    router.replace("/dashboard");
-  }
+  }, [loading, busy, user, isAdmin, router]);
 
   async function onEmail(e: FormEvent) {
     e.preventDefault();
     setError("");
     setBusy(true);
     try {
+      // signInEmail also verifies admin via /api/me
       await signInEmail(email.trim(), password);
-      await afterSignIn();
+      router.replace("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(authErrorMessage(err));
+      // Clear a half-open session (e.g. Firebase ok but not in ADMIN_EMAILS)
       await logout().catch(() => {});
     } finally {
       setBusy(false);
@@ -46,9 +39,9 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await signInGoogle();
-      await afterSignIn();
+      router.replace("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Google login failed");
+      setError(authErrorMessage(err));
       await logout().catch(() => {});
     } finally {
       setBusy(false);
@@ -103,7 +96,7 @@ export default function LoginPage() {
         </div>
         {error ? <p className="err">{error}</p> : null}
         <button className="btn btn-primary" type="submit" disabled={busy} style={{ width: "100%" }}>
-          Sign in
+          {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>
 
