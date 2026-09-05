@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Clients authenticate via Firebase Auth but must not write seats/bookings.
+    // All mutations go through the Next.js Admin SDK.
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}
