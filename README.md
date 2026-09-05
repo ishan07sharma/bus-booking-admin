@@ -16,3 +16,5 @@ Open http://localhost:3000/login
 
 app repo https://github.com/ishan07sharma/bus-booking-app
 
+download the app from the release section in this repo.
+
